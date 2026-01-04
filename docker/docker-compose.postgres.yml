@@ -35,7 +35,7 @@ services:
       - path: .env
         required: false
     ports:
-      - "127.0.0.1:${PGPORT:-5099}:${PGPORT:-5099}"
+      - "${BIND_ADDRESS:-127.0.0.1}:${PGPORT:-5099}:${PGPORT:-5099}"
     volumes:
       - forgetful_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -43,6 +43,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  forgetful-dbui:
+    image: nocodb/nocodb:latest
+    container_name: forgetful-dbui
+    restart: unless-stopped
+    networks:
+      - forgetful
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - ${BIND_ADDRESS:-127.0.0.1}:${NCPORT:-8080}:${NCPORT:-8080}
+    depends_on: 
+      forgetful-db: 
+        condition: service_healthy
 
 volumes:
   forgetful_db_data:
